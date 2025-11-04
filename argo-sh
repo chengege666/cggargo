@@ -39,12 +39,14 @@ echo
 # 菜单逻辑
 while true; do
   read -r -p "$(echo -e "${yellow}→ 请选择操作 (1/2/3): ${re}")" ACTION
+  echo "DEBUG: ACTION is $ACTION"
   echo
   case "$ACTION" in
     1|2)
       break
       ;;
     3)
+      echo "DEBUG: Exiting script."
       exit 0
       ;;
     *)
