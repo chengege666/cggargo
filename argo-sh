@@ -6,12 +6,14 @@ set -euo pipefail
 # Cloudflare Tunnel 自动安装/卸载脚本
 # ======================================================
 
-die(){ echo -e "✖ $*" >&2; exit 1; }
+die(){ echo -e "✖ $*" >&2; exit 1;
+}
 info(){ echo -e "→ $*"; }
 
 # 检查是否为 root
 IS_ROOT=false
-if [ "$(id -u)" -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ];
+then
   IS_ROOT=true
 fi
 
@@ -23,11 +25,11 @@ cyan='\033[1;36m'
 bold='\033[1m'
 re='\033[0m'
 
-cclear
+clear
 echo -e "${cyan}"
-echo "──────────────────────────────────────────────────────"
-echo "        🚀 Cloudflare Argo 安装/卸载器        "
-echo "──────────────────────────────────────────────────────"
+echo "──────────────────────────────────────────────────────" # ✅ 优化边框
+echo "        🚀 Cloudflare Argo 安装/卸载器        " # ✅ 优化边框
+echo "──────────────────────────────────────────────────────" # ✅ 优化边框
 echo -e "${re}"
 
 # 菜单主体
@@ -47,7 +49,7 @@ do
       break
       ;;
     3)
-      echo -e "${green}👍 感谢使用 Cloudflare Argo 安装/卸载器！${re}" # <-- 增加此行
+      echo -e "${green}👍 感谢使用 Cloudflare Argo 安装/卸载器！${re}" # ✅ 增加感谢提示
       exit 0
       ;;
     *)
@@ -60,23 +62,29 @@ done
 # ===============================================================
 # 卸载逻辑 (ACTION == 2)
 # ===============================================================
-if [ "$ACTION" = "2" ]; then
+if [ "$ACTION" = "2" ];
+then
   info "⚠️ 开始卸载 Cloudflare Argo Tunnel..."
 
-  if $IS_ROOT; then
+  if $IS_ROOT;
+then
     SERVICE_FILE="/etc/systemd/system/cloudflared.service"
     CRED_DIR="/root/.cloudflared"
     BIN_PATH="/usr/local/bin/cloudflared"
-    systemctl disable --now cloudflared 2>/dev/null || true
+    systemctl disable --now cloudflared 2>/dev/null ||
+true
     rm -f "$SERVICE_FILE"
-    systemctl daemon-reload || true
+    systemctl daemon-reload ||
+true
   else
     SERVICE_FILE="$HOME/.config/systemd/user/cloudflared.service"
     CRED_DIR="$HOME/.cloudflared"
     BIN_PATH="$HOME/.local/bin/cloudflared"
-    systemctl --user disable --now cloudflared 2>/dev/null || true
+    systemctl --user disable --now cloudflared 2>/dev/null ||
+true
     rm -f "$SERVICE_FILE"
-    systemctl --user daemon-reload || true
+    systemctl --user daemon-reload ||
+true
   fi
 
   rm -rf "$CRED_DIR" "$BIN_PATH"
@@ -93,11 +101,13 @@ fi
 
 # 1. 安装必要工具和 cloudflared
 info "🛠️ 1/4 准备环境..."
-if [ -f /etc/alpine-release ]; then
+if [ -f /etc/alpine-release ];
+then
   PKG_MGR="apk"
 elif [ -f /etc/debian_version ]; then
   PKG_MGR="apt"
-elif [ -f /etc/redhat-release ]; then
+elif [ -f /etc/redhat-release ];
+then
   PKG_MGR="yum"
 else
   die "不支持的系统类型。"
@@ -105,9 +115,11 @@ fi
 
 case "$PKG_MGR" in
   apk)
-    apk add --no-cache curl wget >/dev/null 2>&1 || true ;;
+    apk add --no-cache curl wget >/dev/null 2>&1 ||
+true ;;
   apt)
-    apt update -y >/dev/null 2>&1 && apt install -y curl wget >/dev/null 2>&1 || true ;;
+    apt update -y >/dev/null 2>&1 && apt install -y curl wget >/dev/null 2>&1 ||
+true ;;
   yum)
     yum install -y curl wget >/dev/null 2>&1 || true ;;
 esac
@@ -121,11 +133,12 @@ install_cloudflared(){
   ARCH=$(uname -m)
   case "$ARCH" in
     x86_64|amd64)  FILE="cloudflared-linux-amd64" ;;
-    aarch64|arm64) FILE="cloudflared-linux-arm64" ;;
+aarch64|arm64) FILE="cloudflared-linux-arm64" ;;
     *) die "不支持的架构: $ARCH" ;;
   esac
 		
-  if $IS_ROOT; then
+  if $IS_ROOT;
+then
     DEST="/usr/local/bin"
   else
     DEST="$HOME/.local/bin"
@@ -133,7 +146,8 @@ install_cloudflared(){
     info "非 root 模式：请确保 $DEST 在你的 PATH 环境变量中。"
   fi
 
-  wget -q -O "${DEST}/cloudflared" "https://github.com/cloudflare/cloudflared/releases/latest/download/${FILE}" || die "下载 cloudflared 失败"
+  wget -q -O "${DEST}/cloudflared" "https://github.com/cloudflare/cloudflared/releases/latest/download/${FILE}" ||
+die "下载 cloudflared 失败"
   chmod +x "${DEST}/cloudflared"
   info "✅ cloudflared 安装完成到 ${DEST}/cloudflared"
 }
@@ -142,7 +156,8 @@ install_cloudflared
 # 确认 cloudflared 二进制路径
 CLOUD_BIN="$(command -v cloudflared)"
 CF_VER="$("$CLOUD_BIN" --version 2>/dev/null | head -n1 | awk '{print $3}' || true)"
-if [ -n "$CF_VER" ]; then
+if [ -n "$CF_VER" ];
+then
   info "检测到 cloudflared 版本：$CF_VER"
 fi
 echo
@@ -150,7 +165,8 @@ echo
 # 2. 配置输入
 info "📝 2/4 配置域名和映射..."
 
-if $IS_ROOT; then
+if $IS_ROOT;
+then
   CRED_DIR="/root/.cloudflared"
 else
   CRED_DIR="${HOME}/.cloudflared"
@@ -161,9 +177,11 @@ mkdir -p "$CRED_DIR"
 chmod 700 "$CRED_DIR"
 
 # 输入域名数量
-while true; do
+while true;
+do
   read -r -p "需要配置多少个域名->端口？(例如 2)： " NUM
-  if [[ "$NUM" =~ ^[0-9]+$ ]] && [ "$NUM" -gt 0 ]; then
+  if [[ "$NUM" =~ ^[0-9]+$ ]] && [ "$NUM" -gt 0 ];
+then
     break
   else
     echo -e "${red}✖ 请输入有效的数字（必须大于 0）。${re}"
@@ -172,12 +190,15 @@ done
 
 MAPPINGS=""
 
-for i in $(seq 1 "$NUM"); do
+for i in $(seq 1 "$NUM");
+do
   echo
   echo "--- 配置第 $i 个域名 ---"
-		while true; do
+		while true;
+do
 				read -r -p "请输入要绑定的域名（Public Hostname）： " DOMAIN
-				if [[ -n "$DOMAIN" ]]; then
+				if [[ -n "$DOMAIN" ]];
+then
 						break
 				else
 						echo -e "${red}✖ 域名不能为空，请重新输入。${re}"
@@ -200,20 +221,21 @@ for i in $(seq 1 "$NUM"); do
       WS_PATH=${WS_PATH:-/}
       [[ "$WS_PATH" != /* ]] && WS_PATH="/$WS_PATH"
       ;;
-    2)
+2)
       STREAM_TYPE="grpc"
       read -r -p "请输入 gRPC ServiceName（默认 vmess-grpc）： " WS_PATH
       WS_PATH=${WS_PATH:-vmess-grpc}
       ;;
-    3)
+3)
       STREAM_TYPE="tcp"
       WS_PATH="-"
       ;;
-  esac
+esac
 		
   read -r -p "请输入协议类型 (http/https/tcp，默认 http)： " PROTO
   PROTO=${PROTO:-http}
-  case "$PROTO" in tcp|http|https) ;; *) PROTO="http" ;; esac
+  case "$PROTO" in tcp|http|https) ;;
+*) PROTO="http" ;; esac
 		MAPPINGS="${MAPPINGS}${DOMAIN},${PORT},${WS_PATH},${PROTO},${STREAM_TYPE}\n"
 done
 
@@ -225,10 +247,12 @@ read -r -p "选择凭证方式 (1: Token, 2: JSON 文件内容) 默认 1： " MO
 TUNNEL_TOKEN=""
 CREDENTIAL_FILE=""
 
-if [ "$MODE" = "1" ]; then
+if [ "$MODE" = "1" ];
+then
 		while true; do
 				read -r -p "请输入 Cloudflare Tunnel Token（以 eyJ 开头）： " TUNNEL_TOKEN
-				if [[ -n "$TUNNEL_TOKEN" ]]; then
+				if [[ -n "$TUNNEL_TOKEN" ]];
+then
 						break
 				else
 						echo -e "${red}✖ 必须输入 Token，请重新输入。${re}"
@@ -239,10 +263,12 @@ if [ "$MODE" = "1" ]; then
   info "✅ Token 已保存：$TOKEN_FILE"
 
 else
-  while true; do
+  while true;
+do
     echo "请输入 Cloudflare Tunnel credentials JSON 内容（粘贴完毕后直接按回车确认）："
     JSON_CONTENT=$(cat)
-    if [[ -n "$JSON_CONTENT" ]]; then
+    if [[ -n "$JSON_CONTENT" ]];
+then
         JSON_FILE_NAME="$(date +%Y%m%d-%H%M%S)-tunnel.json"
         CREDENTIAL_FILE="$CRED_DIR/$JSON_FILE_NAME"
         printf "%b" "$JSON_CONTENT" > "$CREDENTIAL_FILE"
@@ -261,12 +287,14 @@ info "💾 4/4 生成配置文件 $CONFIG_FILE..."
   echo "# Cloudflare Tunnel Auto Generated"
   echo
   echo "ingress:"
-  echo -e "$MAPPINGS" | while IFS=',' read -r HOST PORT PATH PROTO STREAM_TYPE; do
+  
+echo -e "$MAPPINGS" | while IFS=',' read -r HOST PORT PATH PROTO STREAM_TYPE;
+do
 				[ -z "$HOST" ] && continue
 				case "$PROTO" in
 						tcp) SERVICE="tcp://localhost:${PORT}" ;;
 						http|https) SERVICE="${PROTO}://localhost:${PORT}" ;;
-				esac
+esac
 
 				echo "  - hostname: ${HOST}"
 				echo "    service: ${SERVICE}"
@@ -275,10 +303,11 @@ info "💾 4/4 生成配置文件 $CONFIG_FILE..."
 				echo "      httpHostHeader: ${HOST}"
 
 				# WebSocket 模式添加升级头
-				if [ "$STREAM_TYPE" = "ws" ] && { [ "$PROTO" = "http" ] || [ "$PROTO" = "https" ]; }; then
+				if [ "$STREAM_TYPE" = "ws" ] && { [ "$PROTO" = "http" ] ||
+[ "$PROTO" = "https" ]; }; then
 						echo "      headers:"
-						echo "        Connection: Upgrade"
-						echo "        Upgrade: websocket"
+						echo "						Connection: Upgrade"
+						echo "						Upgrade: websocket"
 				fi
 
 				echo
@@ -293,26 +322,30 @@ info "⚙️ 启动/启用 systemd 服务..."
 
 # 确定启动命令 (兼容新旧 cloudflared)
 USE_NEW_MODE=false
-if "$CLOUD_BIN" tunnel run --help 2>&1 | grep -q -- '--token-file'; then
+if "$CLOUD_BIN" tunnel run --help 2>&1 |
+grep -q -- '--token-file'; then
   USE_NEW_MODE=true
 fi
 
 if [ "$MODE" = "1" ]; then
-  if [ "$USE_NEW_MODE" = true ]; then
+  if [ "$USE_NEW_MODE" = true ];
+then
     EXEC_CMD="$CLOUD_BIN tunnel run --token-file ${TOKEN_FILE}"
   else
     TOKEN_CONTENT="$(tr -d '\r\n' < "$TOKEN_FILE")"
     EXEC_CMD="$CLOUD_BIN tunnel run --token ${TOKEN_CONTENT} --config ${CONFIG_FILE}"
   fi
 else
-  if [ -n "${CREDENTIAL_FILE:-}" ] && [ -f "${CREDENTIAL_FILE}" ]; then
+  if [ -n "${CREDENTIAL_FILE:-}" ] && [ -f "${CREDENTIAL_FILE}" ];
+then
     EXEC_CMD="$CLOUD_BIN tunnel run --credentials-file ${CREDENTIAL_FILE}"
   else
     EXEC_CMD="$CLOUD_BIN tunnel run --config ${CONFIG_FILE}"
   fi
 fi
 
-if $IS_ROOT; then
+if $IS_ROOT;
+then
   SERVICE_FILE="/etc/systemd/system/cloudflared.service"
   info "生成 systemd 服务文件（system）: $SERVICE_FILE"
   cat > "$SERVICE_FILE" <<EOF
@@ -333,10 +366,12 @@ WantedBy=multi-user.target
 EOF
 
   systemctl daemon-reload
-  systemctl enable --now cloudflared || true
+  systemctl enable --now cloudflared ||
+true
   
   sleep 2
-  if systemctl is-active --quiet cloudflared; then
+  if systemctl is-active --quiet cloudflared;
+then
     info "✅ cloudflared system service 启动成功"
   else
    die "Cloudflare 启动失败！请检查日志：journalctl -u cloudflared -n 50 --no-pager"
@@ -364,10 +399,12 @@ WorkingDirectory=${CRED_DIR}
 WantedBy=default.target
 EOF
 
-  systemctl --user daemon-reload || true
+  systemctl --user daemon-reload ||
+true
   systemctl --user enable --now cloudflared || true
   sleep 1
-  if systemctl --user is-active --quiet cloudflared; then
+  if systemctl --user is-active --quiet cloudflared;
+then
     info "✅ cloudflared 用户服务启动成功 (systemd --user)"
     echo "👍 非 root 用户注意：建议执行 'loginctl enable-linger \$USER' 以确保服务随系统重启。"
   else
