@@ -26,7 +26,7 @@ re='\033[0m'
 clear
 echo -e "${cyan}"
 echo "╔══════════════════════════════════════════╗"
-echo "║   🚀 Cloudflare Argo 安装/卸载器            ║"
+echo "║   🚀 Cloudflare Argo 安装/卸载器          ║"
 echo "╚══════════════════════════════════════════╝"
 echo -e "${re}"
 
