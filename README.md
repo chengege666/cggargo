@@ -1,3 +1,3 @@
 ```bash
-bash <(curl -L -s 'https://github.com/chengege666/cggargo/blob/main/argo-sh')
+bash <(curl -L -s 'https://raw.githubusercontent.com/chengege666/cggargo/main/argo-sh')
 ```
