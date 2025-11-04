@@ -37,7 +37,8 @@ echo -e "${bold}${yellow}3) 退出脚本${re}"
 echo
 
 # 菜单逻辑
-while true; do
+while true;
+do
   read -r -p "$(echo -e "${yellow}→ 请选择操作 (1/2/3): ${re}")" ACTION
   echo "DEBUG: ACTION is $ACTION"
   echo
@@ -46,6 +47,7 @@ while true; do
       break
       ;;
     3)
+      echo -e "${green}👍 感谢使用 Cloudflare Argo 安装/卸载器！${re}" # <-- 增加此行
       exit 0
       ;;
     *)
